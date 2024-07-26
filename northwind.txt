@@ -1,0 +1,33 @@
+use Northwind
+
+--2
+select CustomerID, CompanyName,ContactName,Address,City
+from Customers 
+where City = 'London' or Country = 'France'
+--3
+select  CustomerID, CompanyName,ContactName,Address,City,ContactTitle
+from Customers
+where (ContactTitle ='Sales Manager' and Country='USA')  or (ContactTitle='Owner'and Country= 'Mexico')
+--4
+select  CustomerID, CompanyName,ContactName,Address,City,ContactTitle
+from Customers
+where (ContactTitle like  '%Manager'  and Country='USA') or (not ContactTitle='Owner' and Country= 'Mexico')
+--5
+set dateformat dmy
+select OrderID,OrderDate,CompanyName,LastName
+from Orders o,Customers c,Employees e
+where OrderDate between '1/1/1997' and '30/6/1997'
+	and o.EmployeeID = e.EmployeeID and o.CustomerID = c.CustomerID
+--6
+select OrderID,OrderDate,CustomerID,EmployeeID
+from Orders
+where MONTH(OrderDate) = 2 and YEAR(OrderDate)=1997
+--7
+select  OrderID,OrderDate,Freight
+from Orders o 
+where YEAR(OrderDate)= 1997  and ShipCountry = 'UK' and EmployeeID=2
+--8
+select ProductID,ProductName
+from Products
+where ProductName like 'Ch%'
+--9
