@@ -102,6 +102,42 @@ where ProductName like 'Ch%'
 	(od.UnitPrice*Quantity) - (od.UnitPrice*Quantity*Discount) < 50 and
 	year(o.OrderDate) = 1997
 --22.	Từ Table Product, đếm số sản phẩm, đơn giá cao nhất, thấp nhất và đơn giá trung bình cuả tất cả sản phẩm 
-	
+	select count(ProductID) as 'Count', MAX(UnitPrice) as 'Max',MIN(UnitPrice) as 'MIN', avg(UnitPrice) as 'AVG'
+	from Products
 --23.	Như câu 22 nhưng được nhóm theo loại sản phẩm (Category ID) 
+	select count(ProductID) as 'Count', MAX(UnitPrice) as 'Max',MIN(UnitPrice) as 'MIN', avg(UnitPrice) as 'AVG', CategoryID
+	from Products
+	group by CategoryID
+--24.	Đếm số đơn đặt hàng cuả các Order có Ship Country là Belgium, Canada, UK 
+	select count(OrderID), ShipCountry
+	from Orders
+	where ShipCountry = 'Belgium' or ShipCountry ='Canada' or ShipCountry = 'UK'
+	group by ShipCountry
+--25.	Lập danh sách các loại sản phẩm có đơn giá trung bình lớn hơn 30 
+	select CategoryName , AVG(UnitPrice)
+	from Categories c, Products p
+	where c.CategoryID = p.CategoryID 
+	group by CategoryName
+	having avg(UnitPrice) > 30
+--26.	Tính đơn giá trung bình cuả các sản phẩm có đơn giá lớn hơn 30, nhóm theo loại sản phẩm 
+	select CategoryName , AVG(UnitPrice) 'DGTB'
+	from Categories c, Products p
+	where c.CategoryID = p.CategoryID and UnitPrice>30
+	group by CategoryName
+--27.	Thiết kế query tính doanh số của từng loại sản phẩm (Category) trong năm 1996. Danh sách gồm 2 cột: Category Name, Sales; trong đó SalesTotal = UnitPrice*Quantity*(1-Discount) 
+	select CategoryName, 'Sale Total' = sum(od.UnitPrice * od.Quantity * (1-od.Discount))
+	from Categories c, [Order Details] od, Orders o, Products p
+	where od.OrderID = o.OrderID and 
+		od.ProductID = p.ProductID and
+		p.CategoryID = c.CategoryID and
+		year(OrderDate)= 1996 
+	group by CategoryName
+--28.	Thiết kế query tính tỉ lệ tiền cước mua hàng (Freight) của từng khách hàng trong năm 1997. Danh sách gồm các cột:
+--Company Name (của Customer), Freight, SalesTotal = UnitPrice * Quantity*(1-Discount), Percent= Freight/SalesTotal 
+	select c.CompanyName, Freight, 'SaleTotal' = sum(od.UnitPrice * od.Quantity * (1-od.Discount)), 'Percent' = Freight /sum(od.UnitPrice * od.Quantity * (1-od.Discount))
+	from Orders o, Customers c, [Order Details] od
+	where c.CustomerID = o.CustomerID and
+		o.OrderID = od.OrderID and
+		year(OrderDate)= 1997
+	group by CompanyName, Freight
 
