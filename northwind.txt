@@ -31,3 +31,77 @@ select ProductID,ProductName
 from Products
 where ProductName like 'Ch%'
 --9
+
+
+--12.	Lập danh sách các đơn đặt hàng có Ship country là USA và có Freight > 300 hoặc các đơn có Ship Country là Argentina và Freight <5. Danh sách gồm: Order ID, Customer, Employee, Order date, Ship Country, Ship date, Freight 
+	select o.OrderID,CompanyName,LastName,OrderDate,ShipCountry,ShippedDate,Freight
+	from Orders o, Customers c, Employees e
+	where o.CustomerID = c.CustomerID and
+	o.EmployeeID = e.EmployeeID and
+	((ShipCountry = 'USA' and Freight > 300) or (ShipCountry = 'Argentina' and Freight <5))
+--13.	Lập danh sách các đơn đặt hàng có Ship country là USA và có Freight > 300 hoặc các đơn có Ship Country là Argentina và Freight <5. Danh sách gồm: Order ID, Customer, Employee, Order date, Ship Country, Ship date, Freight 
+	select o.OrderID,CompanyName,LastName,OrderDate,ShipCountry,ShippedDate,Freight
+	from Orders o, Customers c, Employees e
+	where o.CustomerID = c.CustomerID and
+	o.EmployeeID = e.EmployeeID and
+	((ShipCountry = 'USA' and Freight > 300) or (ShipCountry = 'Argentina' and Freight <5))
+--14.	Lập danh sách các đơn hàng trong tháng 4/97 gồm các thông tin sau: Order ID, Order Date, Customer, Employee, Freight, New-Freight trong đó New-Freight =110% Freight. 
+	select o.OrderID,CompanyName,LastName,OrderDate,ShipCountry,ShippedDate,Freight,'New-Freight'=1.1*Freight
+	from Orders o, Customers c, Employees e
+	where o.CustomerID = c.CustomerID and
+	o.EmployeeID = e.EmployeeID and
+	(YEAR(OrderDate)=1997 and MONTH(OrderDate)=4)
+--15.	Lập danh sách trị giá tồn kho các Product không còn tiếp tục cung cấp nữa (trường 
+--Discontinued là Yes). Danh sách gồm: Product ID, Product Name, Supplier Name, 
+--UnitPrice, 	UintsInStock, 	Total, 	Supplier 	Fax, 	trong 	đó 	Total 	= UnitPrice*UnitsInStock 
+	select ProductID,ProductName,s.ContactName as SupplierName,UnitPrice,UnitsInStock,s.Fax
+	from Products p, Suppliers s
+	where p.Discontinued = '1' and s.SupplierID = p.SupplierID
+--16.	Lập danh sách nhân viên (Table Employee) có hire date từ năm 1993 trở về trước. Danh sách gồm: Name, Hire date, Title, BirthDate, Home Phone,
+--trong đó trường Name ghép từ các trường: TitleOfCourstesy, chữ đầu trường LastName và trường FirstName 
+	select 'Name' =TitleOfCourtesy + LastName + FirstName ,HireDate,Title,BirthDate,HomePhone
+	from Employees e
+	where YEAR(HireDate) < 1993
+--17.	Lập danh sách các Order có ngày đặt hàng trong tháng 4 hàng năm. Danh sách gồm: Order ID, Order Date, Customer, 
+--Employee trong đó Customer là Company Name của khách hàng, Employee lấy Last Name 
+	select OrderID, OrderDate, c.CompanyName as Customer, e.LastName
+	from Orders o, Customers c, Employees e
+	where month(OrderDate) =4  and
+	o.CustomerID =  c.CustomerID and
+	o.EmployeeID = e.EmployeeID
+--18.	Lập danh sách các Order có ngày đặt hàng các năm chẳn. Danh sách gồm: Order ID, Order Date, Customer, 
+--Employee trong đó Customer là Company Name của khách hàng, Employee lấy Last Name 
+	select OrderID, OrderDate, c.CompanyName as Customer, e.LastName
+	from Orders o, Customers c, Employees e
+	where year(OrderDate)%2 =0  and
+	o.CustomerID =  c.CustomerID and
+	o.EmployeeID = e.EmployeeID
+--19.	Lập danh sách các Order có ngày đặt hàng là 5, 13, 14, 23. Danh sách gồm: Order ID, Order Date, Customer, Employee trong đó Customer là Company Name của khách hàng, Employee lấy Last Name 
+	select OrderID, OrderDate, c.CompanyName as Customer, e.LastName
+	from Orders o, Customers c, Employees e
+	where (day(OrderDate)=5 or day(OrderDate)=13 or day(OrderDate)=14 or day(OrderDate)=23)  and
+	o.CustomerID =  c.CustomerID and
+	o.EmployeeID = e.EmployeeID
+--20.	Người ta muốn có danh sách chi tiết các hoá đơn (Order Details) trong năm 1997. Danh sách gồm các thông tin: Order ID, ProductName, 
+--Unit Price, Quantity, ThanhTien, Discount, TienGiamGia, TienPhaiTra trong đó: ThanhTien = UnitPrice*Quantity, TienGiamGia = ThanhTien *Discount,
+--TienPhaiTra = ThanhTien – TienGiamGia 
+	select o.OrderID , p.ProductName, od.UnitPrice, Quantity, od.UnitPrice*Quantity as ThanhTien, Discount,
+	'TienGiamGia' =  od.UnitPrice*Quantity*Discount,'TienPhaiTra' = ( od.UnitPrice*Quantity) - (od.UnitPrice*Quantity*Discount)
+	from [Order Details] od, Orders o, Products p
+	where od.OrderID = o.OrderID and
+	od.ProductID = p.ProductID and
+	year(o.OrderDate) = 1997
+
+--21.	Tương tự như câu 20 nhưng chỉ lấy các record có Discount >0 và có TienPhaiTra <50 
+	select o.OrderID , p.ProductName, od.UnitPrice, Quantity, od.UnitPrice*Quantity as ThanhTien, Discount,
+	'TienGiamGia' =  od.UnitPrice*Quantity*Discount,'TienPhaiTra' = ( od.UnitPrice*Quantity) - (od.UnitPrice*Quantity*Discount)
+	from [Order Details] od, Orders o, Products p
+	where od.OrderID = o.OrderID and
+	od.ProductID = p.ProductID and
+	Discount > 0 and
+	(od.UnitPrice*Quantity) - (od.UnitPrice*Quantity*Discount) < 50 and
+	year(o.OrderDate) = 1997
+--22.	Từ Table Product, đếm số sản phẩm, đơn giá cao nhất, thấp nhất và đơn giá trung bình cuả tất cả sản phẩm 
+	
+--23.	Như câu 22 nhưng được nhóm theo loại sản phẩm (Category ID) 
+
