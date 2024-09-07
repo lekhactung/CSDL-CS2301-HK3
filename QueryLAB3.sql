@@ -144,3 +144,47 @@ pivot(
 pivot (
 	sum(triGia) for Quy in([1],[2],[3],[4])
 ) b
+--1.	Hãy tạo một query đặt tên là ThongKeSPTheoNam (thống kê sản phẩm theo năm). Khi chạy, query sẽ hỏi năm bắt đầu thống kê, năm kết thúc thống kê sau đó lập một danh sách trong đó:
+--Các hàng là tên các sản phẩm, các cột là lần lượt các năm liên tiếp trong khoảng các năm vừa nhập, giá trị trong các ô là số lượng sản phẩm đã bán được. 
+select ProductName, [1996],[1997],[1998]
+from ( 
+		select p.ProductName, year(OrderDate) 'Nam',sum(Quantity) 'SL'
+		from Products p, [Order Details] od , Orders o
+		where p.ProductID = od.ProductID and 
+			od.OrderID = o.OrderID and year(OrderDate) between 1996 and 1998
+		group by p.ProductName, year(OrderDate) 
+) A
+pivot(
+	sum(SL) for Nam in ([1996],[1997],[1998])
+)B	
+
+--5.	Tạo query crosstab thống kê doanh số của từng khách hàng của UK theo từng quý trong năm 1995. Kết quả có dạng:
+--(trong đó doanh số = UnitPrice*Quantity) 
+ select CompanyName ,isnull([1],0) Q1, isnull([2],0) Q2, isnull([3],0) Q3, isnull([4],0) Q4,
+ isnull([1],0) + isnull([2],0) + isnull([3],0) + isnull([4],0) as TongCong
+ from  
+ ( select CompanyName, round(od.UnitPrice *od.Quantity,1) as doanhSo,
+				datepart(qq,OrderDate) as 'Quy'
+		 from Customers c, Orders o, [Order Details] od
+		 where c.CustomerID = o.CustomerID and od.OrderID = o.OrderID 
+		 and year(OrderDate) = 1997 and  c.Country = 'UK'
+) a
+pivot (
+	sum(doanhSo) for Quy in([1],[2],[3],[4])
+) b
+
+--6.	Tạo query crostab thống kê doanh số của của từng nhóm hàng (Category Name) theo từng quý trong một năm nào đó. 
+--Kết quả có dạng (thí dụ nhập năm 1995): 
+
+select CategoryName, [1] Q1,[2] Q2,[3] Q3,[4] Q4, isnull([1],0) + isnull([2],0) + isnull([3],0) + isnull([4],0) as TongCong
+from (
+	select CategoryName, DATEPART(q,OrderDate) as quy, round(od.Quantity*od.UnitPrice*(1-Discount),0) as DoanhSo
+	from Categories c, Products p, Orders o, [Order Details] od
+	where c.CategoryID = p.CategoryID and
+		p.ProductID = od.ProductID and
+		o.OrderID = od.OrderID and
+		year(OrderDate) = 1997
+)A
+pivot (
+	sum(DoanhSo) for quy in([1],[2],[3],[4])
+)B
