@@ -187,4 +187,8 @@ from (
 )A
 pivot (
 	sum(DoanhSo) for quy in([1],[2],[3],[4])
+<<<<<<< HEAD
 )B
+=======
+)B
+>>>>>>> a711a5c3eb91ec067fea53ebe6f111dd22fe6714
