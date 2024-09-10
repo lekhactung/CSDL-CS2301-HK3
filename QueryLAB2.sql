@@ -119,13 +119,18 @@
 	select count(ProductID) as 'Count', MAX(UnitPrice) as 'Max',MIN(UnitPrice) as 'MIN', avg(UnitPrice) as 'AVG', CategoryID
 	from Products
 	group by CategoryID
+
+	select count(ProductID) as 'Count', Max(UnitPrice) as 'Max', min(Unitprice) as ' Min', avg(UnitPrice) as 'AVG', CategoryID
+	from Products
+	group by CategoryID
+	
 --24.	Đếm số đơn đặt hàng cuả các Order có Ship Country là Belgium, Canada, UK 
-	select count(OrderID), ShipCountry
+	select count(OrderID) as 'Số đơn đặt hàng', ShipCountry
 	from Orders
 	where ShipCountry = 'Belgium' or ShipCountry ='Canada' or ShipCountry = 'UK'
 	group by ShipCountry
 --25.	Lập danh sách các loại sản phẩm có đơn giá trung bình lớn hơn 30 
-	select CategoryName , AVG(UnitPrice)
+	select CategoryName , round(AVG(UnitPrice),1) as 'Đơn giá trung bình'
 	from Categories c, Products p
 	where c.CategoryID = p.CategoryID 
 	group by CategoryName
@@ -137,7 +142,7 @@
 	group by CategoryName
 --27.	Thiết kế query tính doanh số của từng loại sản phẩm (Category) trong năm 1996. Danh sách gồm 2 cột: 
 --Category Name, Sales; trong đó SalesTotal = UnitPrice*Quantity*(1-Discount) 
-	select CategoryName, 'Sale Total' = round(sum(od.UnitPrice * od.Quantity * (1-od.Discount)),2)
+	select CategoryName, 'Sale Total' = round(sum(od.UnitPrice * od.Quantity * (1-od.Discount)),1)
 	from Categories c, [Order Details] od, Orders o, Products p
 	where od.OrderID = o.OrderID and 
 		od.ProductID = p.ProductID and
@@ -146,13 +151,15 @@
 	group by CategoryName
 --28.	Thiết kế query tính tỉ lệ tiền cước mua hàng (Freight) của từng khách hàng trong năm 1997. Danh sách gồm các cột:
 --Company Name (của Customer), Freight, SalesTotal = UnitPrice * Quantity*(1-Discount), Percent= Freight/SalesTotal 
-	select c.CompanyName, Freight, 'SaleTotal' = sum(od.UnitPrice * od.Quantity * (1-od.Discount)),
-	'Percent' = Freight /sum(od.UnitPrice * od.Quantity * (1-od.Discount))
-	from Orders o, Customers c, [Order Details] od, Products p
-	where c.CustomerID = o.CustomerID and
-		o.OrderID = od.OrderID and
-		year(OrderDate)= 1997
+	select c.CompanyName, Freight, sum(od.UnitPrice * od.Quantity * (1-od.Discount)) as 'SaleTotal', 
+	'Percent' = Freight/sum(od.UnitPrice * od.Quantity * (1-od.Discount))
+	from Customers c, [Order Details] od, Orders o, Products p
+	where c.CustomerID = o.CustomerID and 
+		o.OrderID = od.OrderID 
+		and od.ProductID = p.ProductID
+		and year(OrderDate) = 1997
 	group by CompanyName, Freight
+
 
 --29.	Lập danh sách Customer có Company Name bắt đầu là 1 chữ nào đó được nhập từ bàn phím. Danh sách gồm:
 --Customer ID, CompanyName, ContactName, Address, City, Country, Phone, Fax 
@@ -193,7 +200,7 @@
 --Anh Chị hãy tạo query để thực hiện điều này. Thí dụ nhập ngày 28/9/95 thì ra kết quả sau: 
 	set dateformat dmy
 	declare @Ngay datetime
-	set @Ngay = '28/9/1995'
+	set @Ngay = '28/10/1997'
 	select c.CompanyName, count(o.OrderID) as 'CountOrderID' 
 	from Orders o, Customers c
 	where day(RequiredDate)=day(@ngay) and month(RequiredDate)=month(@ngay) and year(RequiredDate) = year(@ngay) and
@@ -201,5 +208,17 @@
 	group by c.CompanyName
 --34.	Thông thường các khách hàng muốn biết thông tin về đơn hàng của họ đã đặt hàng vào một ngày nào đó. (Khách hàng sẽ báo tên công ty và ngày đặt hàng). 
 --Thông tin gồm tất cả các cột của table Order. Anh chị hãy thiết kế query để thực hiện điều này. 
+	set dateformat dmy
+	declare @ngaydat datetime
+	set @ngaydat = '28/10/1997'
+	declare @CompanyName varchar(50)
+	set @CompanyName = 'Piccolo und mehr'
+	select * 
+	from Customers c, [Order Details] od, Orders o
+	where c.CustomerID = o.CustomerID 
+		--and  day(RequiredDate)=day(@ngaydat) and month(RequiredDate)=month(@ngaydat) and year(RequiredDate) = year(@ngaydat) and
+		and day(OrderDate) = 28 and month(OrderDate) = 10 and year(OrderDate) = 1997 and
+		c.CompanyName = @CompanyName
+
 --35.	Tương tự nhưng năm được nhập từ bàn phím; trong đó nếu không nhập năm mà chỉ Enter thì sẽ lấy năm hiện tại để tính. 
 --36.	Người ta muốn biết trong một ngày nào đó (nếu chỉ Enter là ngày hiện tại) tổng số đơn đặt hàng và doanh số cuả các đơn hàng đó là bao nhiêu. Thí dụ nhập 7 thang 4 nam 1998 thì kết quả sẽ là: 
